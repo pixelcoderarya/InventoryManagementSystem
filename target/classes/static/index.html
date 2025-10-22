@@ -31,6 +31,7 @@ body {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(5px);
+    overflow-y: auto;
 }
 
 .modal-content {
@@ -39,9 +40,11 @@ body {
     padding: 0;
     border-radius: 15px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-    max-width: 400px;
+    max-width: 500px;
     width: 90%;
     animation: modalSlideIn 0.3s ease-out;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 @keyframes modalSlideIn {
@@ -97,17 +100,25 @@ body {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
     padding: 12px 15px;
     border: 2px solid #e1e5e9;
     border-radius: 8px;
     font-size: 14px;
     transition: all 0.3s ease;
     background: #f8f9fa;
+    font-family: inherit;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
     outline: none;
     border-color: #667eea;
     background: white;
@@ -211,7 +222,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 15px 30px;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -245,7 +256,7 @@ body {
     background: white;
     border-bottom: 1px solid #e1e5e9;
     padding: 0 30px;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -277,7 +288,7 @@ body {
 
 /* Main Content */
 .main-content {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 30px;
 }
@@ -346,7 +357,7 @@ body {
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
+    overflow-x: auto;
     margin-bottom: 20px;
 }
 
@@ -362,6 +373,7 @@ body {
     font-weight: 600;
     color: #555;
     border-bottom: 2px solid #e1e5e9;
+    white-space: nowrap;
 }
 
 .data-table td {
@@ -395,6 +407,7 @@ body {
 .stock-controls {
     display: flex;
     gap: 15px;
+    flex-wrap: wrap;
 }
 
 /* Loading Spinner */
@@ -493,12 +506,17 @@ body {
     .data-table td {
         padding: 10px 8px;
     }
+    
+    .stock-controls {
+        flex-direction: column;
+    }
 }
 
 /* Action Buttons in Tables */
 .action-buttons {
     display: flex;
     gap: 5px;
+    flex-wrap: wrap;
 }
 
 .action-buttons .btn {
@@ -617,18 +635,18 @@ body {
                 <div class="tab-header">
                     <h2><i class="fas fa-boxes"></i> Product Management</h2>
                     <div class="tab-actions">
-                        <button class="btn btn-primary">
+                        <button class="btn btn-primary" onclick="showAddProductModal()">
                             <i class="fas fa-plus"></i> Add Product
                         </button>
-                        <button class="btn btn-secondary">
+                        <button class="btn btn-secondary" onclick="loadProducts()">
                             <i class="fas fa-sync"></i> Refresh
                         </button>
                     </div>
                 </div>
                 
                 <div class="search-bar">
-                    <input type="text" placeholder="Search products...">
-                    <select>
+                    <input type="text" id="productSearch" placeholder="Search products..." oninput="filterProducts()">
+                    <select id="categoryFilter" onchange="filterProducts()">
                         <option value="">All Categories</option>
                         <option value="Electronics">Electronics</option>
                         <option value="Furniture">Furniture</option>
@@ -651,7 +669,7 @@ body {
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="productsTableBody">
                             <tr>
                                 <td colspan="8" style="text-align: center; padding: 40px;">No products available. Add your first product!</td>
                             </tr>
@@ -662,10 +680,10 @@ body {
                 <div class="stock-actions">
                     <h3>Stock Management</h3>
                     <div class="stock-controls">
-                        <button class="btn btn-success">
+                        <button class="btn btn-success" onclick="showStockInModal()">
                             <i class="fas fa-plus"></i> Stock In
                         </button>
-                        <button class="btn btn-warning">
+                        <button class="btn btn-warning" onclick="showStockOutModal()">
                             <i class="fas fa-minus"></i> Stock Out
                         </button>
                     </div>
@@ -677,17 +695,17 @@ body {
                 <div class="tab-header">
                     <h2><i class="fas fa-truck"></i> Supplier Management</h2>
                     <div class="tab-actions">
-                        <button class="btn btn-primary">
+                        <button class="btn btn-primary" onclick="showAddSupplierModal()">
                             <i class="fas fa-plus"></i> Add Supplier
                         </button>
-                        <button class="btn btn-secondary">
+                        <button class="btn btn-secondary" onclick="loadSuppliers()">
                             <i class="fas fa-sync"></i> Refresh
                         </button>
                     </div>
                 </div>
 
                 <div class="search-bar">
-                    <input type="text" placeholder="Search suppliers...">
+                    <input type="text" id="supplierSearch" placeholder="Search suppliers..." oninput="filterSuppliers()">
                 </div>
 
                 <div class="table-container">
@@ -703,7 +721,7 @@ body {
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="suppliersTableBody">
                             <tr>
                                 <td colspan="7" style="text-align: center; padding: 40px;">No suppliers available.</td>
                             </tr>
@@ -717,10 +735,7 @@ body {
                 <div class="tab-header">
                     <h2><i class="fas fa-exchange-alt"></i> Transaction Management</h2>
                     <div class="tab-actions">
-                        <button class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Add Transaction
-                        </button>
-                        <button class="btn btn-secondary">
+                        <button class="btn btn-secondary" onclick="loadTransactions()">
                             <i class="fas fa-sync"></i> Refresh
                         </button>
                     </div>
@@ -731,15 +746,15 @@ body {
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Product ID</th>
+                                <th>Product</th>
                                 <th>Quantity</th>
                                 <th>Type</th>
                                 <th>Date</th>
-                                <th>User ID</th>
+                                <th>User</th>
                                 <th>Notes</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="transactionsTableBody">
                             <tr>
                                 <td colspan="7" style="text-align: center; padding: 40px;">No transactions available.</td>
                             </tr>
@@ -753,30 +768,27 @@ body {
                 <div class="tab-header">
                     <h2><i class="fas fa-users"></i> User Management</h2>
                     <div class="tab-actions">
-                        <button class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Add User
-                        </button>
-                        <button class="btn btn-secondary">
+                        <button class="btn btn-secondary" onclick="loadUsers()">
                             <i class="fas fa-sync"></i> Refresh
                         </button>
                     </div>
                 </div>
 
                 <div class="search-bar">
-                    <input type="text" placeholder="Search users...">
+                    <input type="text" id="userSearch" placeholder="Search users..." oninput="filterUsers()">
                 </div>
 
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Username</th>
+                                <th>Full Name</th>
                                 <th>Role</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="usersTableBody">
                             <tr>
                                 <td colspan="4" style="text-align: center; padding: 40px;">No users available.</td>
                             </tr>
@@ -787,10 +799,168 @@ body {
         </main>
     </div>
 
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="login-container">
+                <div class="login-header">
+                    <h1><i class="fas fa-box"></i> Add New Product</h1>
+                    <p>Enter product details</p>
+                </div>
+                <form id="addProductForm" class="login-form" onsubmit="handleAddProduct(event)">
+                    <div class="form-group">
+                        <label for="productName">Product Name *</label>
+                        <input type="text" id="productName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productSKU">SKU *</label>
+                        <input type="text" id="productSKU" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productCategory">Category *</label>
+                        <select id="productCategory" required>
+                            <option value="">Select Category</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Furniture">Furniture</option>
+                            <option value="Office Supplies">Office Supplies</option>
+                            <option value="Appliances">Appliances</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="productPrice">Price *</label>
+                        <input type="number" id="productPrice" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productQuantity">Initial Quantity *</label>
+                        <input type="number" id="productQuantity" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productDescription">Description</label>
+                        <textarea id="productDescription"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Product
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeAddProductModal()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Supplier Modal -->
+    <div id="addSupplierModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="login-container">
+                <div class="login-header">
+                    <h1><i class="fas fa-truck"></i> Add New Supplier</h1>
+                    <p>Enter supplier details</p>
+                </div>
+                <form id="addSupplierForm" class="login-form" onsubmit="handleAddSupplier(event)">
+                    <div class="form-group">
+                        <label for="supplierName">Supplier Name *</label>
+                        <input type="text" id="supplierName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierContact">Contact Person *</label>
+                        <input type="text" id="supplierContact" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierEmail">Email *</label>
+                        <input type="email" id="supplierEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierPhone">Phone *</label>
+                        <input type="tel" id="supplierPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierAddress">Address</label>
+                        <textarea id="supplierAddress"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Supplier
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeAddSupplierModal()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock In Modal -->
+    <div id="stockInModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="login-container">
+                <div class="login-header">
+                    <h1><i class="fas fa-plus-circle"></i> Stock In</h1>
+                    <p>Add stock to product</p>
+                </div>
+                <form id="stockInForm" class="login-form" onsubmit="handleStockIn(event)">
+                    <div class="form-group">
+                        <label for="stockInProduct">Select Product *</label>
+                        <select id="stockInProduct" required>
+                            <option value="">Select a product</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="stockInQuantity">Quantity *</label>
+                        <input type="number" id="stockInQuantity" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stockInNotes">Notes</label>
+                        <textarea id="stockInNotes"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Confirm Stock In
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeStockInModal()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Out Modal -->
+    <div id="stockOutModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="login-container">
+                <div class="login-header">
+                    <h1><i class="fas fa-minus-circle"></i> Stock Out</h1>
+                    <p>Remove stock from product</p>
+                </div>
+                <form id="stockOutForm" class="login-form" onsubmit="handleStockOut(event)">
+                    <div class="form-group">
+                        <label for="stockOutProduct">Select Product *</label>
+                        <select id="stockOutProduct" required>
+                            <option value="">Select a product</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="stockOutQuantity">Quantity *</label>
+                        <input type="number" id="stockOutQuantity" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stockOutNotes">Notes</label>
+                        <textarea id="stockOutNotes"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-check"></i> Confirm Stock Out
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeStockOutModal()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div id="toastContainer" class="toast-container"></div>
 
     <script>
-        // In-memory user database (simulating backend)
+        // In-memory databases
         let users = {
             'admin': {
                 password: 'admin123',
@@ -800,7 +970,14 @@ body {
         };
         
         let currentUser = null;
+        let products = [];
+        let productIdCounter = 1;
+        let suppliers = [];
+        let supplierIdCounter = 1;
+        let transactions = [];
+        let transactionIdCounter = 1;
 
+        // Authentication Functions
         function showRegister() {
             document.getElementById('loginModal').style.display = 'none';
             document.getElementById('registerModal').style.display = 'flex';
@@ -812,13 +989,11 @@ body {
         }
 
         function validateUsername(username) {
-            // Username must be 4-20 characters, alphanumeric and underscore only
             const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/;
             return usernameRegex.test(username);
         }
 
         function validatePassword(password) {
-            // Password must be at least 6 characters
             return password.length >= 6;
         }
 
@@ -827,25 +1002,21 @@ body {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
 
-            // Validate inputs
             if (!username || !password) {
                 showToast('Please enter both username and password', 'error');
                 return;
             }
 
-            // Check if user exists
             if (!users[username]) {
                 showToast('Invalid username or password', 'error');
                 return;
             }
 
-            // Check password
             if (users[username].password !== password) {
                 showToast('Invalid username or password', 'error');
                 return;
             }
 
-            // Login successful
             currentUser = {
                 username: username,
                 role: users[username].role,
@@ -856,15 +1027,17 @@ body {
             document.getElementById('mainApp').style.display = 'block';
             document.getElementById('userDisplayName').textContent = `Welcome, ${currentUser.fullName} (${currentUser.role})`;
             
-            // Show Users tab only for ADMIN
             if (currentUser.role === 'ADMIN') {
                 document.getElementById('usersTabBtn').style.display = 'flex';
             }
 
             showToast(`Login successful! Welcome ${currentUser.fullName}`, 'success');
-            
-            // Clear form
             document.getElementById('loginForm').reset();
+            
+            loadProducts();
+            loadSuppliers();
+            loadTransactions();
+            loadUsers();
         }
 
         function handleRegister(event) {
@@ -874,31 +1047,26 @@ body {
             const confirmPassword = document.getElementById('regConfirmPassword').value;
             const role = document.getElementById('regRole').value;
 
-            // Validate username format
             if (!validateUsername(username)) {
                 showToast('Username must be 4-20 characters (letters, numbers, underscore only)', 'error');
                 return;
             }
 
-            // Check if username already exists
             if (users[username]) {
                 showToast('Username already exists! Please choose another.', 'error');
                 return;
             }
 
-            // Validate password length
             if (!validatePassword(password)) {
                 showToast('Password must be at least 6 characters long', 'error');
                 return;
             }
 
-            // Check if passwords match
             if (password !== confirmPassword) {
                 showToast('Passwords do not match!', 'error');
                 return;
             }
 
-            // Register new user
             users[username] = {
                 password: password,
                 role: role,
@@ -906,8 +1074,6 @@ body {
             };
 
             showToast(`Registration successful! You can now login with username: ${username}`, 'success');
-            
-            // Clear form and go back to login
             document.getElementById('registerForm').reset();
             showLogin();
         }
@@ -920,6 +1086,496 @@ body {
             showToast('Logged out successfully', 'success');
         }
 
+        // Product Management Functions
+        function showAddProductModal() {
+            document.getElementById('addProductModal').style.display = 'flex';
+        }
+
+        function closeAddProductModal() {
+            document.getElementById('addProductModal').style.display = 'none';
+            document.getElementById('addProductForm').reset();
+        }
+
+        function handleAddProduct(event) {
+            event.preventDefault();
+            
+            const product = {
+                id: productIdCounter++,
+                name: document.getElementById('productName').value.trim(),
+                sku: document.getElementById('productSKU').value.trim(),
+                category: document.getElementById('productCategory').value,
+                price: parseFloat(document.getElementById('productPrice').value),
+                quantity: parseInt(document.getElementById('productQuantity').value),
+                description: document.getElementById('productDescription').value.trim()
+            };
+
+            products.push(product);
+            
+            if (product.quantity > 0) {
+                transactions.push({
+                    id: transactionIdCounter++,
+                    productId: product.id,
+                    productName: product.name,
+                    quantity: product.quantity,
+                    type: 'STOCK_IN',
+                    date: new Date().toLocaleString(),
+                    user: currentUser.username,
+                    notes: 'Initial stock'
+                });
+            }
+
+            showToast('Product added successfully!', 'success');
+            closeAddProductModal();
+            loadProducts();
+            updateStockSelects();
+        }
+
+        function loadProducts() {
+            const tbody = document.getElementById('productsTableBody');
+            
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">No products available. Add your first product!</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = products.map(product => `
+                <tr>
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>${product.sku}</td>
+                    <td>${product.category}</td>
+                    <td>${product.price.toFixed(2)}</td>
+                    <td>${product.quantity}</td>
+                    <td>${product.description || '-'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-warning" onclick="editProduct(${product.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteProduct(${product.id})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            document.getElementById('productName').value = product.name;
+            document.getElementById('productSKU').value = product.sku;
+            document.getElementById('productCategory').value = product.category;
+            document.getElementById('productPrice').value = product.price;
+            document.getElementById('productQuantity').value = product.quantity;
+            document.getElementById('productDescription').value = product.description;
+
+            products = products.filter(p => p.id !== id);
+            showAddProductModal();
+            showToast('Edit the product details and save', 'warning');
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                products = products.filter(p => p.id !== id);
+                loadProducts();
+                updateStockSelects();
+                showToast('Product deleted successfully', 'success');
+            }
+        }
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+
+            const filteredProducts = products.filter(product => {
+                const matchesSearch = product.name.toLowerCase().includes(searchTerm) ||
+                                    product.sku.toLowerCase().includes(searchTerm) ||
+                                    (product.description && product.description.toLowerCase().includes(searchTerm));
+                const matchesCategory = !categoryFilter || product.category === categoryFilter;
+                return matchesSearch && matchesCategory;
+            });
+
+            const tbody = document.getElementById('productsTableBody');
+            
+            if (filteredProducts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">No products match your search.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filteredProducts.map(product => `
+                <tr>
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>${product.sku}</td>
+                    <td>${product.category}</td>
+                    <td>${product.price.toFixed(2)}</td>
+                    <td>${product.quantity}</td>
+                    <td>${product.description || '-'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-warning" onclick="editProduct(${product.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteProduct(${product.id})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Supplier Management Functions
+        function showAddSupplierModal() {
+            document.getElementById('addSupplierModal').style.display = 'flex';
+        }
+
+        function closeAddSupplierModal() {
+            document.getElementById('addSupplierModal').style.display = 'none';
+            document.getElementById('addSupplierForm').reset();
+        }
+
+        function handleAddSupplier(event) {
+            event.preventDefault();
+            
+            const supplier = {
+                id: supplierIdCounter++,
+                name: document.getElementById('supplierName').value.trim(),
+                contact: document.getElementById('supplierContact').value.trim(),
+                email: document.getElementById('supplierEmail').value.trim(),
+                phone: document.getElementById('supplierPhone').value.trim(),
+                address: document.getElementById('supplierAddress').value.trim()
+            };
+
+            suppliers.push(supplier);
+            showToast('Supplier added successfully!', 'success');
+            closeAddSupplierModal();
+            loadSuppliers();
+        }
+
+        function loadSuppliers() {
+            const tbody = document.getElementById('suppliersTableBody');
+            
+            if (suppliers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No suppliers available.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = suppliers.map(supplier => `
+                <tr>
+                    <td>${supplier.id}</td>
+                    <td>${supplier.name}</td>
+                    <td>${supplier.contact}</td>
+                    <td>${supplier.email}</td>
+                    <td>${supplier.phone}</td>
+                    <td>${supplier.address || '-'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-warning" onclick="editSupplier(${supplier.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteSupplier(${supplier.id})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editSupplier(id) {
+            const supplier = suppliers.find(s => s.id === id);
+            if (!supplier) return;
+
+            document.getElementById('supplierName').value = supplier.name;
+            document.getElementById('supplierContact').value = supplier.contact;
+            document.getElementById('supplierEmail').value = supplier.email;
+            document.getElementById('supplierPhone').value = supplier.phone;
+            document.getElementById('supplierAddress').value = supplier.address;
+
+            suppliers = suppliers.filter(s => s.id !== id);
+            showAddSupplierModal();
+            showToast('Edit the supplier details and save', 'warning');
+        }
+
+        function deleteSupplier(id) {
+            if (confirm('Are you sure you want to delete this supplier?')) {
+                suppliers = suppliers.filter(s => s.id !== id);
+                loadSuppliers();
+                showToast('Supplier deleted successfully', 'success');
+            }
+        }
+
+        function filterSuppliers() {
+            const searchTerm = document.getElementById('supplierSearch').value.toLowerCase();
+
+            const filteredSuppliers = suppliers.filter(supplier => {
+                return supplier.name.toLowerCase().includes(searchTerm) ||
+                       supplier.contact.toLowerCase().includes(searchTerm) ||
+                       supplier.email.toLowerCase().includes(searchTerm) ||
+                       supplier.phone.includes(searchTerm);
+            });
+
+            const tbody = document.getElementById('suppliersTableBody');
+            
+            if (filteredSuppliers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No suppliers match your search.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filteredSuppliers.map(supplier => `
+                <tr>
+                    <td>${supplier.id}</td>
+                    <td>${supplier.name}</td>
+                    <td>${supplier.contact}</td>
+                    <td>${supplier.email}</td>
+                    <td>${supplier.phone}</td>
+                    <td>${supplier.address || '-'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-warning" onclick="editSupplier(${supplier.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteSupplier(${supplier.id})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Stock Management Functions
+        function showStockInModal() {
+            if (products.length === 0) {
+                showToast('Please add products first!', 'error');
+                return;
+            }
+            updateStockSelects();
+            document.getElementById('stockInModal').style.display = 'flex';
+        }
+
+        function closeStockInModal() {
+            document.getElementById('stockInModal').style.display = 'none';
+            document.getElementById('stockInForm').reset();
+        }
+
+        function showStockOutModal() {
+            if (products.length === 0) {
+                showToast('Please add products first!', 'error');
+                return;
+            }
+            updateStockSelects();
+            document.getElementById('stockOutModal').style.display = 'flex';
+        }
+
+        function closeStockOutModal() {
+            document.getElementById('stockOutModal').style.display = 'none';
+            document.getElementById('stockOutForm').reset();
+        }
+
+        function updateStockSelects() {
+            const stockInSelect = document.getElementById('stockInProduct');
+            const stockOutSelect = document.getElementById('stockOutProduct');
+            
+            const options = products.map(p => 
+                `<option value="${p.id}">${p.name} (SKU: ${p.sku}) - Current: ${p.quantity}</option>`
+            ).join('');
+
+            stockInSelect.innerHTML = '<option value="">Select a product</option>' + options;
+            stockOutSelect.innerHTML = '<option value="">Select a product</option>' + options;
+        }
+
+        function handleStockIn(event) {
+            event.preventDefault();
+            
+            const productId = parseInt(document.getElementById('stockInProduct').value);
+            const quantity = parseInt(document.getElementById('stockInQuantity').value);
+            const notes = document.getElementById('stockInNotes').value.trim();
+
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                showToast('Product not found!', 'error');
+                return;
+            }
+
+            product.quantity += quantity;
+
+            transactions.push({
+                id: transactionIdCounter++,
+                productId: product.id,
+                productName: product.name,
+                quantity: quantity,
+                type: 'STOCK_IN',
+                date: new Date().toLocaleString(),
+                user: currentUser.username,
+                notes: notes || '-'
+            });
+
+            showToast(`Stock added successfully! New quantity: ${product.quantity}`, 'success');
+            closeStockInModal();
+            loadProducts();
+            loadTransactions();
+        }
+
+        function handleStockOut(event) {
+            event.preventDefault();
+            
+            const productId = parseInt(document.getElementById('stockOutProduct').value);
+            const quantity = parseInt(document.getElementById('stockOutQuantity').value);
+            const notes = document.getElementById('stockOutNotes').value.trim();
+
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                showToast('Product not found!', 'error');
+                return;
+            }
+
+            if (product.quantity < quantity) {
+                showToast(`Insufficient stock! Available: ${product.quantity}`, 'error');
+                return;
+            }
+
+            product.quantity -= quantity;
+
+            transactions.push({
+                id: transactionIdCounter++,
+                productId: product.id,
+                productName: product.name,
+                quantity: quantity,
+                type: 'STOCK_OUT',
+                date: new Date().toLocaleString(),
+                user: currentUser.username,
+                notes: notes || '-'
+            });
+
+            showToast(`Stock removed successfully! New quantity: ${product.quantity}`, 'success');
+            closeStockOutModal();
+            loadProducts();
+            loadTransactions();
+        }
+
+        // Transaction Management Functions
+        function loadTransactions() {
+            const tbody = document.getElementById('transactionsTableBody');
+            
+            if (transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No transactions available.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = transactions.slice().reverse().map(transaction => `
+                <tr>
+                    <td>${transaction.id}</td>
+                    <td>${transaction.productName}</td>
+                    <td>${transaction.quantity}</td>
+                    <td>
+                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; 
+                            background: ${transaction.type === 'STOCK_IN' ? '#d4edda' : '#fff3cd'}; 
+                            color: ${transaction.type === 'STOCK_IN' ? '#155724' : '#856404'};">
+                            ${transaction.type === 'STOCK_IN' ? 'Stock In' : 'Stock Out'}
+                        </span>
+                    </td>
+                    <td>${transaction.date}</td>
+                    <td>${transaction.user}</td>
+                    <td>${transaction.notes}</td>
+                </tr>
+            `).join('');
+        }
+
+        // User Management Functions
+        function loadUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            const userList = Object.entries(users).map(([username, data]) => ({
+                username,
+                ...data
+            }));
+            
+            if (userList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">No users available.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = userList.map(user => `
+                <tr>
+                    <td>${user.username}</td>
+                    <td>${user.fullName}</td>
+                    <td>
+                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; 
+                            background: ${user.role === 'ADMIN' ? '#d4edda' : user.role === 'MANAGER' ? '#cce5ff' : '#f8d7da'}; 
+                            color: ${user.role === 'ADMIN' ? '#155724' : user.role === 'MANAGER' ? '#004085' : '#721c24'};">
+                            ${user.role}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            ${currentUser.username !== user.username ? `
+                                <button class="btn btn-danger" onclick="deleteUser('${user.username}')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            ` : '<span style="color: #999; font-size: 12px;">Current User</span>'}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteUser(username) {
+            if (confirm(`Are you sure you want to delete user: ${username}?`)) {
+                delete users[username];
+                loadUsers();
+                showToast('User deleted successfully', 'success');
+            }
+        }
+
+        function filterUsers() {
+            const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+            const userList = Object.entries(users).map(([username, data]) => ({
+                username,
+                ...data
+            }));
+
+            const filteredUsers = userList.filter(user => 
+                user.username.toLowerCase().includes(searchTerm) ||
+                user.fullName.toLowerCase().includes(searchTerm) ||
+                user.role.toLowerCase().includes(searchTerm)
+            );
+
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (filteredUsers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">No users match your search.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filteredUsers.map(user => `
+                <tr>
+                    <td>${user.username}</td>
+                    <td>${user.fullName}</td>
+                    <td>
+                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; 
+                            background: ${user.role === 'ADMIN' ? '#d4edda' : user.role === 'MANAGER' ? '#cce5ff' : '#f8d7da'}; 
+                            color: ${user.role === 'ADMIN' ? '#155724' : user.role === 'MANAGER' ? '#004085' : '#721c24'};">
+                            ${user.role}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            ${currentUser.username !== user.username ? `
+                                <button class="btn btn-danger" onclick="deleteUser('${user.username}')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            ` : '<span style="color: #999; font-size: 12px;">Current User</span>'}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Tab Navigation
         function switchTab(tabName) {
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -928,6 +1584,7 @@ body {
             document.getElementById(tabName + 'Content').classList.add('active');
         }
 
+        // Toast Notifications
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -939,7 +1596,7 @@ body {
             }, 3000);
         }
 
-        // Show welcome message on page load
+        // Initialize on page load
         window.addEventListener('load', () => {
             setTimeout(() => {
                 showToast('Demo System - Master Login: admin / admin123', 'warning');
