@@ -1,4 +1,4 @@
-# Arya Inventory Management System
+# Inventory Management Pro
 
 A comprehensive inventory management system built with Java Spring Boot backend, MySQL database, and Java Swing frontend.
 
