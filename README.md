@@ -1,6 +1,6 @@
 # Inventory Management System
 
-A comprehensive inventory management system built with Java Spring Boot backend, MySQL database, and Java Swing frontend.
+A comprehensive inventory management system built with Java Spring Boot backend, MySQL database, and Java Springboot frontend.
 
 ## Features
 
